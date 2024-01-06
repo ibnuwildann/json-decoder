@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Decoder</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f4f4;
+        }
+
+        #container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+            /* Menambahkan margin ke bawah pada form */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #loading {
+            margin-top: 20px;
+            display: none;
+            /* Menambahkan margin ke atas pada loading */
+        }
+
+        /* .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background:
+                radial-gradient(farthest-side, #ffa516 94%, #0000) top/8px 8px no-repeat,
+                conic-gradient(#0000 30%, #ffa516);
+            -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
+            animation: l13 1s infinite linear;
+
+        } */
+
+        /* HTML: <div class="loader"></div> */
+        .loader {
+            width: 30px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 8px solid #514b82;
+            animation:
+                l20-1 0.8s infinite linear alternate,
+                l20-2 1.6s infinite linear;
+        }
+
+        @keyframes l20-1 {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+            }
+
+            12.5% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+            }
+
+            25% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+            }
+
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            62.5% {
+                clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            75% {
+                clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+            }
+
+            100% {
+                clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+            }
+        }
+
+        @keyframes l20-2 {
+            0% {
+                transform: scaleY(1) rotate(0deg)
+            }
+
+            49.99% {
+                transform: scaleY(1) rotate(135deg)
+            }
+
+            50% {
+                transform: scaleY(-1) rotate(0deg)
+            }
+
+            100% {
+                transform: scaleY(-1) rotate(-135deg)
+            }
+        }
+
+        #result {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            /* Mengubah justify-content menjadi center */
+            text-align: center;
+        }
+
+        .card {
+            width: 300px;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+
+        .card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Tambahkan gaya untuk elemen overlay popup dan box popup */
+        #popupOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #popupBox {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        /* Gaya untuk tombol tutup */
+        #closePopupBtn {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #closePopupBtn:hover {
+            
+            padding: 10px;
+            background-color: #e22323;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            
+        }
+
+
+        @media (max-width: 600px) {
+            .card {
+                width: 100%;
+                /* Card akan memiliki lebar 100% pada layar kecil */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="popupOverlay">
+        <div id="popupBox">
+            <p id="popupMessage">Tidak ada data ditemukan.</p>
+            <button id="closePopupBtn">Tutup</button>
+        </div>
+    </div>
+
+
+    <div id="container">
+        <h2>JSON Decoder</h2>
+        <form id="jsonForm">
+            <label for="api_path">Photo id:</label>
+            <input type="text" id="api_path" name="api_path" required>
+            <button type="submit">Cari</button>
+        </form>
+
+        <div id="loading" class="loader"></div>
+        <ul id="result"></ul>
+    </div>
+    <script>
+        const jsonForm = document.getElementById('jsonForm');
+        const loadingDiv = document.getElementById('loading');
+        const resultUl = document.getElementById('result');
+
+        jsonForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            // Menampilkan loading
+            loadingDiv.style.display = 'block';
+            resultUl.innerHTML = '';
+
+            const apiURL = document.getElementById('api_path').value;
+            const response = await fetch('/decode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `api_path=${encodeURIComponent(apiURL)}`,
+            });
+            const result = await response.json();
+
+            if (result.photo) {
+
+                loadingDiv.style.display = 'none';
+
+                console.log('id: ' + result.photo.id);
+                console.log('title: ' + result.photo.title);
+
+                // Membuat card untuk hasil foto
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const image = document.createElement('img');
+                image.src = result.photo.url;
+                card.appendChild(image);
+
+                const title = document.createElement('h3');
+                title.textContent = result.photo.title;
+                card.appendChild(title);
+
+                const description = document.createElement('p');
+                description.textContent = result.photo.description;
+                card.appendChild(description);
+
+                resultUl.appendChild(card);
+
+            } else {
+                // Menampilkan elemen popup jika tidak ada data ditemukan
+                document.getElementById('popupOverlay').style.display = 'flex';
+            }
+        });
+
+        // Menambahkan event listener untuk tombol tutup pada elemen popup
+        document.getElementById('closePopupBtn').addEventListener('click', function () {
+            document.getElementById('popupOverlay').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        });
+
+    </script>
+</body>
+
+</html>
